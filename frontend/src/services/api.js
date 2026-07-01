@@ -26,7 +26,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // ── Response Interceptor ──────────────────────────────────────────
@@ -34,9 +34,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
+    const requestUrl = error.config?.url || "";
+    const isAuthEndpoint = /\/auth\/(login|register|logout|me)/i.test(
+      requestUrl,
+    );
 
-    // Session expired → redirect to login
-    if (status === 401) {
+    // Session expired → redirect to login for protected routes only
+    if (status === 401 && !isAuthEndpoint) {
       localStorage.removeItem("ic_user");
       if (window.location.pathname !== "/login") {
         window.location.href = "/login";
@@ -44,7 +48,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

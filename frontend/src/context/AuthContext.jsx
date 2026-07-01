@@ -4,21 +4,28 @@ import { authService } from "@/services/auth.service";
 export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser]         = useState(null);
+  const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // ── Bootstrap: check if a session already exists ──────────────
+  // ── Bootstrap: verify a previously saved session only when we have one ──
   useEffect(() => {
     const bootstrap = async () => {
+      const storedUser = localStorage.getItem("ic_user");
+
+      if (!storedUser) {
+        setUser(null);
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        const storedUser = localStorage.getItem("ic_user");
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
-        }
-        // Optionally verify token with backend
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+
         const res = await authService.getMe();
-        setUser(res.data.data);
-        localStorage.setItem("ic_user", JSON.stringify(res.data.data));
+        const freshUser = res.data.data;
+        setUser(freshUser);
+        localStorage.setItem("ic_user", JSON.stringify(freshUser));
       } catch {
         setUser(null);
         localStorage.removeItem("ic_user");
@@ -26,6 +33,7 @@ export const AuthProvider = ({ children }) => {
         setIsLoading(false);
       }
     };
+
     bootstrap();
   }, []);
 
@@ -64,7 +72,9 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout, updateUser }}>
+    <AuthContext.Provider
+      value={{ user, isLoading, login, register, logout, updateUser }}
+    >
       {children}
     </AuthContext.Provider>
   );
