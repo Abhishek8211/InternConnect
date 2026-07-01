@@ -68,7 +68,12 @@
   }
 
   /* Headings */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.02em;
@@ -81,7 +86,8 @@
     transition: color var(--transition-base);
   }
 
-  img, video {
+  img,
+  video {
     max-width: 100%;
     height: auto;
     display: block;
@@ -92,7 +98,9 @@
     font-family: inherit;
   }
 
-  input, textarea, select {
+  input,
+  textarea,
+  select {
     font-family: inherit;
   }
 }
@@ -188,8 +196,13 @@
   }
 
   /* Hide scrollbar (but keep scroll) */
-  .no-scrollbar::-webkit-scrollbar { display: none; }
-  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 
   /* Text clamp */
   .line-clamp-2 {

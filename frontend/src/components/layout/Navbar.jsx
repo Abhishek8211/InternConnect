@@ -55,7 +55,9 @@ const Navbar = () => {
           to={link.href}
           className={({ isActive }) =>
             `rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-              isActive ? "text-brand-600" : "text-slate-700 hover:text-brand-600"
+              isActive
+                ? "text-brand-600"
+                : "text-slate-700 hover:text-brand-600"
             }`
           }
           onClick={onClick}
@@ -77,16 +79,17 @@ const Navbar = () => {
       }`}
     >
       <nav className="container-page flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2.5 text-lg font-bold tracking-tight group">
+        <Link
+          to="/"
+          className="flex items-center gap-2.5 text-lg font-bold tracking-tight group"
+        >
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 shadow-glow-sm transition-all duration-300 group-hover:shadow-glow">
             <Briefcase className="h-4 w-4 text-white" />
           </div>
           <span className="gradient-text">InternConnect</span>
         </Link>
 
-        <div className="hidden items-center gap-1 md:flex">
-          {renderLinks()}
-        </div>
+        <div className="hidden items-center gap-1 md:flex">{renderLinks()}</div>
 
         <div className="hidden items-center gap-3 md:flex">
           {user ? (
@@ -98,7 +101,9 @@ const Navbar = () => {
               >
                 <Avatar src={user.avatar?.url} name={user.name} size="sm" />
                 <span className="max-w-[120px] truncate">{user.name}</span>
-                <ChevronDown className={`h-4 w-4 text-slate-500 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} />
+                <ChevronDown
+                  className={`h-4 w-4 text-slate-500 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+                />
               </button>
 
               {isDropdownOpen && (
@@ -121,8 +126,12 @@ const Navbar = () => {
             </div>
           ) : (
             <>
-              <Button as={Link} to="/login" variant="ghost" size="sm">Sign In</Button>
-              <Button as={Link} to="/register" variant="primary" size="sm">Get Started</Button>
+              <Button as={Link} to="/login" variant="ghost" size="sm">
+                Sign In
+              </Button>
+              <Button as={Link} to="/register" variant="primary" size="sm">
+                Get Started
+              </Button>
             </>
           )}
         </div>
@@ -133,7 +142,11 @@ const Navbar = () => {
           onClick={() => setIsMenuOpen((p) => !p)}
           aria-label="Toggle menu"
         >
-          {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {isMenuOpen ? (
+            <X className="h-5 w-5" />
+          ) : (
+            <Menu className="h-5 w-5" />
+          )}
         </button>
       </nav>
 
@@ -150,8 +163,26 @@ const Navbar = () => {
               </button>
             ) : (
               <div className="mt-2 flex gap-2">
-                <Button as={Link} to="/login" variant="ghost" size="sm" className="flex-1" onClick={() => setIsMenuOpen(false)}>Sign In</Button>
-                <Button as={Link} to="/register" variant="primary" size="sm" className="flex-1" onClick={() => setIsMenuOpen(false)}>Get Started</Button>
+                <Button
+                  as={Link}
+                  to="/login"
+                  variant="ghost"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Sign In
+                </Button>
+                <Button
+                  as={Link}
+                  to="/register"
+                  variant="primary"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Get Started
+                </Button>
               </div>
             )}
           </div>

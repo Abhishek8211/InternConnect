@@ -9,7 +9,7 @@ export default {
       },
       colors: {
         brand: {
-          50:  "#eff6ff",
+          50: "#eff6ff",
           100: "#dbeafe",
           200: "#bfdbfe",
           300: "#93c5fd",
@@ -22,7 +22,7 @@ export default {
           950: "#0f172a",
         },
         accent: {
-          50:  "#f0f9ff",
+          50: "#f0f9ff",
           100: "#e0f2fe",
           200: "#bae6fd",
           300: "#7dd3fc",
@@ -35,16 +35,16 @@ export default {
         },
         surface: {
           DEFAULT: "#0f172a",
-          card:    "#111827",
-          border:  "#e2e8f0",
-          muted:   "#64748b",
+          card: "#111827",
+          border: "#e2e8f0",
+          muted: "#64748b",
         },
       },
       boxShadow: {
-        "glow-sm":  "0 0 12px 0 rgba(37, 99, 235, 0.18)",
-        "glow":     "0 0 24px 0 rgba(37, 99, 235, 0.25)",
-        "glow-lg":  "0 0 48px 0 rgba(37, 99, 235, 0.32)",
-        "card":     "0 16px 45px 0 rgba(15, 23, 42, 0.10)",
+        "glow-sm": "0 0 12px 0 rgba(37, 99, 235, 0.18)",
+        glow: "0 0 24px 0 rgba(37, 99, 235, 0.25)",
+        "glow-lg": "0 0 48px 0 rgba(37, 99, 235, 0.32)",
+        card: "0 16px 45px 0 rgba(15, 23, 42, 0.10)",
       },
       borderRadius: {
         xl: "0.75rem",
@@ -83,8 +83,8 @@ export default {
         "fade-in-scale": "fade-in-scale 0.3s ease-out forwards",
         "slide-in-right": "slide-in-right 0.4s ease-out forwards",
         "gradient-shift": "gradient-shift 6s ease infinite",
-        "shimmer": "shimmer 2s linear infinite",
-        "float": "float 4s ease-in-out infinite",
+        shimmer: "shimmer 2s linear infinite",
+        float: "float 4s ease-in-out infinite",
       },
       backgroundSize: {
         "300%": "300%",
