@@ -11,10 +11,10 @@ import { forwardRef } from "react";
  */
 const VARIANTS = {
   primary:   "bg-brand-500 text-white hover:bg-brand-600 shadow-glow-sm hover:shadow-glow active:scale-95",
-  secondary: "bg-surface-card text-white border border-surface-border hover:border-brand-500/50 hover:bg-surface-card/80",
-  ghost:     "text-surface-muted hover:text-white hover:bg-surface-border/40",
+  secondary: "bg-white text-slate-700 border border-slate-200 hover:border-brand-500/50 hover:bg-slate-50",
+  ghost:     "text-slate-600 hover:text-brand-600 hover:bg-slate-100",
   danger:    "bg-red-500/15 text-red-400 border border-red-500/30 hover:bg-red-500/25 hover:border-red-500/60",
-  outline:   "border border-brand-500/50 text-brand-400 hover:bg-brand-500/10",
+  outline:   "border border-brand-500/50 text-brand-600 hover:bg-brand-50",
   gradient:  "gradient-bg text-white shadow-glow-sm hover:shadow-glow active:scale-95",
 };
 
