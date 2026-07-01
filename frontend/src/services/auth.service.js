@@ -7,6 +7,12 @@ export const authService = {
   /** Log in */
   login: (data) => api.post("/auth/login", data),
 
+  /** Request a password reset email */
+  forgotPassword: (data) => api.post("/auth/forgot-password", data),
+
+  /** Reset password with a token */
+  resetPassword: (data) => api.post("/auth/reset-password", data),
+
   /** Log out (clears cookie server-side) */
   logout: () => api.post("/auth/logout"),
 

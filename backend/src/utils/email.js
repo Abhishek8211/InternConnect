@@ -50,4 +50,17 @@ const welcomeEmailHtml = (name) => `
   </div>
 `;
 
-module.exports = { sendEmail, welcomeEmailHtml };
+const resetPasswordEmailHtml = (name, resetUrl) => `
+  <div style="font-family: Inter, sans-serif; max-width: 600px; margin: auto; padding: 32px; background: #f9fafb; border-radius: 12px;">
+    <h1 style="color: #4f46e5; margin-bottom: 8px;">Reset your password</h1>
+    <p style="color: #374151;">Hi <strong>${name}</strong>,</p>
+    <p style="color: #374151;">We received a request to reset your InternConnect password. Use the link below to choose a new one.</p>
+    <a href="${resetUrl}" style="display:inline-block;margin-top:20px;padding:12px 24px;background:#4f46e5;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">
+      Reset Password
+    </a>
+    <p style="color: #9ca3af; margin-top: 20px; font-size: 12px;">If you didn't request this, you can safely ignore this email.</p>
+    <p style="color: #9ca3af; margin-top: 32px; font-size: 12px;">© ${new Date().getFullYear()} InternConnect. All rights reserved.</p>
+  </div>
+`;
+
+module.exports = { sendEmail, welcomeEmailHtml, resetPasswordEmailHtml };

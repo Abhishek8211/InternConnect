@@ -1,9 +1,14 @@
+const crypto = require("crypto");
 const { asyncHandler } = require("../middleware/error.middleware");
 const { ApiResponse, ApiError } = require("../utils/apiResponse");
 const User = require("../models/User.model");
 const generateToken = require("../utils/generateToken");
 const { COOKIE_OPTIONS } = require("../config/constants");
-const { sendEmail, welcomeEmailHtml } = require("../utils/email");
+const {
+  sendEmail,
+  welcomeEmailHtml,
+  resetPasswordEmailHtml,
+} = require("../utils/email");
 
 // ─── @desc    Register a new user
 // ─── @route   POST /api/v1/auth/register
@@ -18,12 +23,30 @@ const register = asyncHandler(async (req, res) => {
   const token = generateToken(user._id, user.role);
 
   // Send welcome email (non-blocking)
-  sendEmail({ to: user.email, subject: "Welcome to InternConnect 🚀", html: welcomeEmailHtml(user.name) }).catch(console.error);
+  sendEmail({
+    to: user.email,
+    subject: "Welcome to InternConnect 🚀",
+    html: welcomeEmailHtml(user.name),
+  }).catch(console.error);
 
   res.cookie("token", token, COOKIE_OPTIONS);
-  return res.status(201).json(
-    new ApiResponse(201, { user: { id: user._id, name: user.name, email: user.email, role: user.role }, token }, "Registration successful")
-  );
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(
+        201,
+        {
+          user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          },
+          token,
+        },
+        "Registration successful",
+      ),
+    );
 });
 
 // ─── @desc    Login user
@@ -37,7 +60,11 @@ const login = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Invalid email or password.");
   }
 
-  if (!user.isActive) throw new ApiError(403, "Your account has been deactivated. Contact support.");
+  if (!user.isActive)
+    throw new ApiError(
+      403,
+      "Your account has been deactivated. Contact support.",
+    );
 
   user.lastLogin = new Date();
   await user.save({ validateBeforeSave: false });
@@ -45,9 +72,24 @@ const login = asyncHandler(async (req, res) => {
   const token = generateToken(user._id, user.role);
   res.cookie("token", token, COOKIE_OPTIONS);
 
-  return res.status(200).json(
-    new ApiResponse(200, { user: { id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar }, token }, "Login successful")
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        {
+          user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            avatar: user.avatar,
+          },
+          token,
+        },
+        "Login successful",
+      ),
+    );
 });
 
 // ─── @desc    Logout user
@@ -55,7 +97,9 @@ const login = asyncHandler(async (req, res) => {
 // ─── @access  Private
 const logout = asyncHandler(async (_req, res) => {
   res.cookie("token", "", { ...COOKIE_OPTIONS, maxAge: 0 });
-  return res.status(200).json(new ApiResponse(200, null, "Logged out successfully"));
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Logged out successfully"));
 });
 
 // ─── @desc    Get currently logged-in user
@@ -63,7 +107,90 @@ const logout = asyncHandler(async (_req, res) => {
 // ─── @access  Private
 const getMe = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
-  return res.status(200).json(new ApiResponse(200, user, "Current user fetched"));
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Current user fetched"));
 });
 
-module.exports = { register, login, logout, getMe };
+// ─── @desc    Send password reset instructions
+// ─── @route   POST /api/v1/auth/forgot-password
+// ─── @access  Public
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email: email.toLowerCase() });
+
+  if (user) {
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    user.passwordResetToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+    user.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+    await user.save({ validateBeforeSave: false });
+
+    const resetUrl = `${process.env.CLIENT_URL || process.env.FRONTEND_URL || "http://localhost:5173"}/reset-password?token=${resetToken}`;
+
+    if (
+      process.env.EMAIL_HOST &&
+      process.env.EMAIL_USER &&
+      process.env.EMAIL_PASS
+    ) {
+      await sendEmail({
+        to: user.email,
+        subject: "Reset your InternConnect password",
+        html: resetPasswordEmailHtml(user.name, resetUrl),
+      });
+    } else {
+      console.warn(
+        "⚠️ Email credentials are not configured. Password reset link was not sent.",
+      );
+    }
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        null,
+        "If an account exists, password reset instructions have been sent.",
+      ),
+    );
+});
+
+// ─── @desc    Reset password using token
+// ─── @route   POST /api/v1/auth/reset-password
+// ─── @access  Public
+const resetPassword = asyncHandler(async (req, res) => {
+  const { token, password } = req.body;
+
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    throw new ApiError(400, "Password reset token is invalid or has expired.");
+  }
+
+  user.password = password;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, null, "Your password has been reset successfully."),
+    );
+});
+
+module.exports = {
+  register,
+  login,
+  logout,
+  getMe,
+  forgotPassword,
+  resetPassword,
+};
