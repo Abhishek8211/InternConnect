@@ -22,9 +22,18 @@ export const userService = {
   /** Get student dashboard stats (counts, trend chart, profile score) */
   getStudentDashboard: () => api.get("/users/dashboard/student"),
 
+  /** Get recruiter dashboard stats */
+  getRecruiterDashboard: () => api.get("/users/dashboard/recruiter"),
+
   /** Toggle save/unsave on an internship */
   toggleSaved: (internshipId) => api.patch(`/users/saved/${internshipId}`),
 
   /** Get all saved internships for the student */
   getSaved: () => api.get("/users/saved"),
+
+  /** Get all users — Admin only (paginated) */
+  getAllUsers: (params) => api.get("/users", { params }),
+
+  /** Toggle a user's active status — Admin only */
+  toggleUserStatus: (userId) => api.patch(`/users/${userId}/toggle-status`),
 };

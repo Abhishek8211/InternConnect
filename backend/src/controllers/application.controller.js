@@ -31,6 +31,9 @@ const applyToInternship = asyncHandler(async (req, res) => {
     resume: { url: resumeUrl, publicId: resumePublicId },
   });
 
+  internship.applicationCount += 1;
+  await internship.save();
+
   return res.status(201).json(new ApiResponse(201, application, "Application submitted successfully"));
 });
 
@@ -57,10 +60,29 @@ const getApplicationsByInternship = asyncHandler(async (req, res) => {
   }
 
   const applications = await Application.find({ internship: internshipId })
-    .populate("applicant", "name email avatar profile.skills profile.education")
+    .populate("applicant", "name email avatar profile.skills profile.education profile.resume")
     .sort("-createdAt");
 
   return res.status(200).json(new ApiResponse(200, applications, "Applications fetched"));
+});
+
+// ─── @desc    Get all applications for all of the recruiter's listings
+// ─── @route   GET /api/v1/applications/my-listings
+// ─── @access  Private (Recruiter)
+const getApplicationsForMyListings = asyncHandler(async (req, res) => {
+  const myInternships = await Internship.find({ postedBy: req.user._id }).select("_id title company").populate("company", "name logo");
+  const internshipIds = myInternships.map(i => i._id);
+
+  const applications = await Application.find({ internship: { $in: internshipIds } })
+    .populate("applicant", "name email avatar profile.skills profile.education profile.resume")
+    .populate({
+      path: "internship",
+      select: "title",
+      populate: { path: "company", select: "name logo" }
+    })
+    .sort("-createdAt");
+
+  return res.status(200).json(new ApiResponse(200, applications, "All applicants fetched"));
 });
 
 // ─── @desc    Update application status
@@ -99,7 +121,10 @@ const withdrawApplication = asyncHandler(async (req, res) => {
   }
 
   await application.deleteOne();
+  
+  await Internship.findByIdAndUpdate(application.internship, { $inc: { applicationCount: -1 } });
+
   return res.status(200).json(new ApiResponse(200, null, "Application withdrawn"));
 });
 
-module.exports = { applyToInternship, getMyApplications, getApplicationsByInternship, updateApplicationStatus, withdrawApplication };
+module.exports = { applyToInternship, getMyApplications, getApplicationsByInternship, getApplicationsForMyListings, updateApplicationStatus, withdrawApplication };

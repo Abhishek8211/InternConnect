@@ -5,6 +5,7 @@ const {
   updateAvatar,
   uploadResume,
   getStudentDashboard,
+  getRecruiterDashboard,
   toggleSavedInternship,
   getSavedInternships,
   getAllUsers,
@@ -24,8 +25,9 @@ router.put("/profile", updateProfile);
 router.put("/avatar", uploadImage.single("avatar"), updateAvatar);
 router.put("/resume", uploadResumeMw.single("resume"), uploadResume);
 
-// Student dashboard stats
+// Dashboard stats
 router.get("/dashboard/student", authorise("student"), getStudentDashboard);
+router.get("/dashboard/recruiter", authorise("recruiter", "admin"), getRecruiterDashboard);
 
 // Save / unsave internships
 router.get("/saved", authorise("student"), getSavedInternships);

@@ -14,6 +14,9 @@ export const applicationService = {
   getByInternship: (internshipId) =>
     api.get(`/applications/internship/${internshipId}`),
 
+  /** Get all applications across all listings for a recruiter */
+  getApplicationsForMyListings: () => api.get("/applications/my-listings"),
+
   /** Update application status (recruiter/admin) */
   updateStatus: (id, data) => api.patch(`/applications/${id}/status`, data),
 

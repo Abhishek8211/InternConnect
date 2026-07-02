@@ -141,6 +141,51 @@ const getStudentDashboard = asyncHandler(async (req, res) => {
   );
 });
 
+// ─── @desc    Get recruiter dashboard stats
+// ─── @route   GET /api/v1/users/dashboard/recruiter
+// ─── @access  Private (Recruiter)
+const getRecruiterDashboard = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  // Get recruiter's listings
+  const myInternships = await Internship.find({ postedBy: userId }).select("_id isActive");
+  const internshipIds = myInternships.map(i => i._id);
+  const activeListings = myInternships.filter(i => i.isActive).length;
+  const totalListings = myInternships.length;
+
+  // Aggregate applications for those listings
+  const applicationsRaw = await Application.find({ internship: { $in: internshipIds } })
+    .select("status createdAt");
+
+  let totalApplications = 0;
+  let shortlisted = 0;
+  let hired = 0; // Assuming accepted = hired
+
+  applicationsRaw.forEach(app => {
+    totalApplications++;
+    if (app.status === "shortlisted") shortlisted++;
+    if (app.status === "accepted") hired++;
+  });
+
+  // Recent applications (last 5)
+  const recentApplications = await Application.find({ internship: { $in: internshipIds } })
+    .sort("-createdAt")
+    .limit(5)
+    .populate("applicant", "name email avatar")
+    .populate("internship", "title");
+
+  return res.status(200).json(
+    new ApiResponse(200, {
+      totalListings,
+      activeListings,
+      totalApplications,
+      shortlisted,
+      hired,
+      recentApplications
+    }, "Dashboard data fetched")
+  );
+});
+
 // ─── @desc    Toggle save/unsave an internship
 // ─── @route   PATCH /api/v1/users/saved/:internshipId
 // ─── @access  Private (Student)
@@ -214,6 +259,7 @@ module.exports = {
   updateAvatar,
   uploadResume,
   getStudentDashboard,
+  getRecruiterDashboard,
   toggleSavedInternship,
   getSavedInternships,
   getAllUsers,
