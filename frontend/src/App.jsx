@@ -3,6 +3,9 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Spinner from "@/components/ui/Spinner";
 import PageWrapper from "@/components/layout/PageWrapper";
+import StudentLayout from "@/components/layout/StudentLayout";
+import RecruiterLayout from "@/components/layout/RecruiterLayout";
+import AdminLayout from "@/components/layout/AdminLayout";
 
 // ── Public Pages ─────────────────────────────────────────────────
 const Home = lazy(() => import("@/pages/Home"));
@@ -53,43 +56,61 @@ const App = () => {
           <Route path="/internships" element={<BrowseInternships />} />
         </Route>
 
-        {/* ── Student ─────────────────────────────────────── */}
+        {/* ── Student (with dedicated sidebar layout) ─────── */}
         <Route
           element={
             <ProtectedRoute roles={["student"]}>
-              <PageWrapper />
+              <StudentLayout />
             </ProtectedRoute>
           }
         >
           <Route path="/student/dashboard" element={<StudentDashboard />} />
           <Route path="/student/applications" element={<MyApplications />} />
           <Route path="/student/profile" element={<StudentProfile />} />
+          {/* Stub routes for new sidebar items */}
+          <Route path="/student/resume" element={<StudentProfile />} />
+          <Route path="/student/recommended" element={<BrowseInternships />} />
+          <Route path="/student/saved" element={<MyApplications />} />
+          <Route path="/student/notifications" element={<StudentDashboard />} />
+          <Route path="/student/settings" element={<StudentProfile />} />
         </Route>
 
-        {/* ── Recruiter ────────────────────────────────────── */}
+        {/* ── Recruiter (with dedicated sidebar layout) ──── */}
         <Route
           element={
             <ProtectedRoute roles={["recruiter"]}>
-              <PageWrapper />
+              <RecruiterLayout />
             </ProtectedRoute>
           }
         >
-          <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
-          <Route path="/recruiter/post" element={<PostInternship />} />
-          <Route path="/recruiter/listings" element={<ManageListings />} />
+          <Route path="/recruiter/dashboard"  element={<RecruiterDashboard />} />
+          <Route path="/recruiter/post"        element={<PostInternship />} />
+          <Route path="/recruiter/listings"    element={<ManageListings />} />
+          {/* Stub routes for new sidebar items */}
+          <Route path="/recruiter/applicants" element={<RecruiterDashboard />} />
+          <Route path="/recruiter/analytics"  element={<RecruiterDashboard />} />
+          <Route path="/recruiter/company"    element={<RecruiterDashboard />} />
+          <Route path="/recruiter/settings"   element={<RecruiterDashboard />} />
         </Route>
 
-        {/* ── Admin ────────────────────────────────────────── */}
+        {/* ── Admin (with dedicated sidebar layout) ──────── */}
         <Route
           element={
             <ProtectedRoute roles={["admin"]}>
-              <PageWrapper />
+              <AdminLayout />
             </ProtectedRoute>
           }
         >
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/users" element={<AdminUsers />} />
-          <Route path="/admin/internships" element={<AdminInternships />} />
+          <Route path="/admin/dashboard"    element={<AdminDashboard />} />
+          <Route path="/admin/users"         element={<AdminUsers />} />
+          <Route path="/admin/internships"   element={<AdminInternships />} />
+          {/* Stub routes for new sidebar items */}
+          <Route path="/admin/students"      element={<AdminUsers />} />
+          <Route path="/admin/companies"     element={<AdminUsers />} />
+          <Route path="/admin/applications"  element={<AdminInternships />} />
+          <Route path="/admin/reports"       element={<AdminDashboard />} />
+          <Route path="/admin/analytics"     element={<AdminDashboard />} />
+          <Route path="/admin/settings"      element={<AdminUsers />} />
         </Route>
 
         {/* ── 404 ─────────────────────────────────────────── */}

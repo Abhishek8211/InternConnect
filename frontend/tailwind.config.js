@@ -77,6 +77,14 @@ export default {
           "0%, 100%": { transform: "translateY(0px)" },
           "50%": { transform: "translateY(-8px)" },
         },
+        "slide-up": {
+          "0%": { opacity: "0", transform: "translateY(16px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "pulse-dot": {
+          "0%, 100%": { opacity: "1", transform: "scale(1)" },
+          "50%": { opacity: "0.5", transform: "scale(0.85)" },
+        },
       },
       animation: {
         "fade-in": "fade-in 0.4s ease-out forwards",
@@ -85,6 +93,8 @@ export default {
         "gradient-shift": "gradient-shift 6s ease infinite",
         shimmer: "shimmer 2s linear infinite",
         float: "float 4s ease-in-out infinite",
+        "slide-up": "slide-up 0.5s ease-out forwards",
+        "pulse-dot": "pulse-dot 2s ease-in-out infinite",
       },
       backgroundSize: {
         "300%": "300%",
