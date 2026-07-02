@@ -41,6 +41,8 @@ const userSchema = new mongoose.Schema(
     profile: {
       headline: { type: String, maxlength: 120 },
       bio: { type: String, maxlength: 500 },
+      phone: { type: String, default: "" },
+      location: { type: String, default: "" },
       skills: [{ type: String, trim: true }],
       education: [
         {
@@ -49,6 +51,13 @@ const userSchema = new mongoose.Schema(
           field: String,
           startYear: Number,
           endYear: Number,
+        },
+      ],
+      certifications: [
+        {
+          title: String,
+          organisation: String,
+          year: String,
         },
       ],
       resume: {
@@ -61,6 +70,14 @@ const userSchema = new mongoose.Schema(
         portfolio: { type: String, default: "" },
       },
     },
+
+    // ─── Saved internships ───────────────────────────────────────
+    savedInternships: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Internship",
+      },
+    ],
 
     // ─── Account State ────────────────────────────────────────────
     isVerified: { type: Boolean, default: false },

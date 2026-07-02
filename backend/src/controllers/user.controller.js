@@ -1,12 +1,14 @@
 const { asyncHandler } = require("../middleware/error.middleware");
 const { ApiResponse, ApiError } = require("../utils/apiResponse");
 const User = require("../models/User.model");
+const Application = require("../models/Application.model");
+const Internship = require("../models/Internship.model");
 
 // ─── @desc    Get user profile
 // ─── @route   GET /api/v1/users/profile
 // ─── @access  Private
 const getProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id);
+  const user = await User.findById(req.user._id).populate("savedInternships", "title company type stipend applicationDeadline");
   return res.status(200).json(new ApiResponse(200, user, "Profile fetched"));
 });
 
@@ -58,6 +60,121 @@ const uploadResume = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, user, "Resume uploaded"));
 });
 
+// ─── @desc    Get student dashboard stats
+// ─── @route   GET /api/v1/users/dashboard/student
+// ─── @access  Private (Student)
+const getStudentDashboard = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  // Aggregate application counts by status in a single DB query
+  const statusCounts = await Application.aggregate([
+    { $match: { applicant: userId } },
+    { $group: { _id: "$status", count: { $sum: 1 } } },
+  ]);
+
+  const counts = { total: 0, pending: 0, shortlisted: 0, accepted: 0, rejected: 0, reviewed: 0 };
+  statusCounts.forEach(({ _id, count }) => {
+    counts[_id] = count;
+    counts.total += count;
+  });
+
+  // Recent 4 applications with internship + company details
+  const recentApplications = await Application.find({ applicant: userId })
+    .sort("-createdAt")
+    .limit(4)
+    .populate({
+      path: "internship",
+      select: "title type stipend location",
+      populate: { path: "company", select: "name logo" },
+    });
+
+  // Monthly aggregation for the trend chart (last 6 months)
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+  sixMonthsAgo.setDate(1);
+  sixMonthsAgo.setHours(0, 0, 0, 0);
+
+  const trendRaw = await Application.aggregate([
+    { $match: { applicant: userId, createdAt: { $gte: sixMonthsAgo } } },
+    {
+      $group: {
+        _id: {
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" },
+          status: "$status",
+        },
+        count: { $sum: 1 },
+      },
+    },
+    { $sort: { "_id.year": 1, "_id.month": 1 } },
+  ]);
+
+  // Build 6-month chart array
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const trend = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date();
+    d.setMonth(d.getMonth() - i);
+    const y = d.getFullYear();
+    const m = d.getMonth() + 1; // 1-indexed
+    const applied = trendRaw.filter(r => r._id.year === y && r._id.month === m).reduce((s, r) => s + r.count, 0);
+    const shortlisted = trendRaw.filter(r => r._id.year === y && r._id.month === m && r._id.status === "shortlisted").reduce((s, r) => s + r.count, 0);
+    trend.push({ month: MONTHS[m - 1], applied, shortlisted });
+  }
+
+  // Profile completion score (0–100)
+  const user = await User.findById(userId);
+  let score = 0;
+  if (user.name) score += 20;
+  if (user.profile?.bio) score += 15;
+  if (user.profile?.skills?.length > 0) score += 20;
+  if (user.profile?.education?.length > 0) score += 20;
+  if (user.profile?.resume?.url) score += 15;
+  if (user.profile?.socialLinks?.github || user.profile?.socialLinks?.linkedin) score += 10;
+  const profileScore = Math.min(100, score);
+
+  // Saved internships count
+  const savedCount = user.savedInternships?.length || 0;
+
+  return res.status(200).json(
+    new ApiResponse(200, { counts, recentApplications, trend, profileScore, savedCount }, "Dashboard data fetched")
+  );
+});
+
+// ─── @desc    Toggle save/unsave an internship
+// ─── @route   PATCH /api/v1/users/saved/:internshipId
+// ─── @access  Private (Student)
+const toggleSavedInternship = asyncHandler(async (req, res) => {
+  const { internshipId } = req.params;
+
+  const user = await User.findById(req.user._id);
+  const isSaved = user.savedInternships.some((id) => id.toString() === internshipId);
+
+  if (isSaved) {
+    user.savedInternships = user.savedInternships.filter((id) => id.toString() !== internshipId);
+  } else {
+    user.savedInternships.push(internshipId);
+  }
+
+  await user.save({ validateBeforeSave: false });
+
+  return res.status(200).json(
+    new ApiResponse(200, { saved: !isSaved, savedInternships: user.savedInternships }, isSaved ? "Internship unsaved" : "Internship saved")
+  );
+});
+
+// ─── @desc    Get saved internships for a student
+// ─── @route   GET /api/v1/users/saved
+// ─── @access  Private (Student)
+const getSavedInternships = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id).populate({
+    path: "savedInternships",
+    populate: { path: "company", select: "name logo" },
+  });
+
+  return res.status(200).json(new ApiResponse(200, user.savedInternships || [], "Saved internships fetched"));
+});
+
 // ─── @desc    Get all users (admin)
 // ─── @route   GET /api/v1/users
 // ─── @access  Private (Admin)
@@ -91,4 +208,14 @@ const toggleUserStatus = asyncHandler(async (req, res) => {
   );
 });
 
-module.exports = { getProfile, updateProfile, updateAvatar, uploadResume, getAllUsers, toggleUserStatus };
+module.exports = {
+  getProfile,
+  updateProfile,
+  updateAvatar,
+  uploadResume,
+  getStudentDashboard,
+  toggleSavedInternship,
+  getSavedInternships,
+  getAllUsers,
+  toggleUserStatus,
+};
