@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/InternConnect-AI%20Powered-6366f1?style=for-the-badge&logoColor=white" alt="InternConnect"/>
+  <img src="https://img.shields.io/badge/InternConnect-Live-6366f1?style=for-the-badge&logoColor=white" alt="InternConnect"/>
 </p>
 
 <h1 align="center">🚀 InternConnect</h1>
 
 <p align="center">
   <strong>AI-Powered Internship Matching Portal</strong><br/>
-  A full-stack MERN application connecting students with opportunities and recruiters with talent.
+  A production-ready MERN stack application where students find internships, recruiters post opportunities, and admins manage the platform — all with real live data.
 </p>
 
 <p align="center">
@@ -42,23 +42,25 @@
 ## ✨ Features
 
 ### 👨‍🎓 For Students
-- 🔍 **Smart Search & Filters** — Browse internships by role, type, skills, stipend, and location
-- 🤖 **AI Matching** — Get personalized recommendations based on your profile
-- 📄 **One-Click Apply** — Upload resume and submit applications in seconds
-- 📊 **Application Tracker** — Real-time status updates for every application
-- 👤 **Rich Profile** — Showcase education, skills, projects, and social links
+- 🔍 **Smart Search & Filters** — Browse internships by role, company, work type (Remote / Hybrid / On-site), and more
+- 📝 **One-Click Apply** — Submit applications with an optional cover letter; your saved resume is auto-attached
+- 📊 **Application Tracker** — Real-time status timeline (Pending → Reviewed → Shortlisted → Accepted / Rejected) with recruiter notes
+- 🔖 **Save Internships** — Bookmark listings and retrieve them anytime
+- 👤 **Rich Profile** — Edit bio, headline, skills, education, certifications, social links; upload avatar & resume directly
+- 📈 **Personal Dashboard** — Live stats, 6-month activity chart, profile completion score — all from real MongoDB data
+- 🔔 **Status Notifications** — See application updates the moment recruiters act on them
 
 ### 🏢 For Recruiters
-- 📝 **Post Internships** — Create detailed listings with requirements, stipend, and deadline
-- 📬 **Applicant Management** — Review applications, add notes, and update status
-- 🏷️ **Company Profile** — Build a verified company page with logo and branding
-- 📈 **Analytics** — Track views, application counts, and hiring funnel
+- 📝 **Post Internships** — Create detailed listings with skills, stipend, duration, work type, and application deadline
+- 📬 **Applicant Management** — View all applicants for a listing, add recruiter notes, and update status
+- 🏷️ **Company Profile** — Build a verified company page with logo and description
+- 📈 **Listing Analytics** — Track view counts and total applications per listing
 
 ### 🛡️ For Admins
-- 📊 **Platform Dashboard** — Real-time stats: users, internships, applications, companies
+- 📊 **Platform Dashboard** — Real-time stats across users, internships, applications, and companies
 - ✅ **Company Verification** — Approve or reject company registrations
-- ⭐ **Feature Listings** — Pin high-quality internships to the top
-- 🔧 **User Management** — Activate, deactivate, and manage all platform users
+- ⭐ **Feature Listings** — Pin high-quality internships to the top of search results
+- 🔧 **User Management** — Activate or deactivate any account on the platform
 
 ---
 
@@ -72,8 +74,10 @@
 | Vite | 5.x | Build tool & dev server |
 | Tailwind CSS | 3.x | Utility-first styling |
 | React Router DOM | 6.x | Client-side routing |
-| Axios | 1.7.x | HTTP client |
+| Axios | 1.7.x | HTTP client with interceptors |
+| Recharts | 2.x | Dashboard charts (area, pie) |
 | Lucide React | 0.468.x | Icon library |
+| date-fns | 4.x | Relative time formatting |
 
 ### Backend
 
@@ -84,12 +88,12 @@
 | MongoDB | — | NoSQL database |
 | Mongoose | 8.x | ODM / schema validation |
 | JSON Web Token | 9.x | Authentication tokens |
-| bcryptjs | 2.4.x | Password hashing |
+| bcryptjs | 2.4.x | Password hashing (12 rounds) |
 | Multer | 1.x | File upload handling |
-| Cloudinary | 1.x | Cloud media storage |
+| Cloudinary | 1.x | Cloud media storage (avatars, resumes) |
 | Helmet | 8.x | HTTP security headers |
 | express-rate-limit | 7.x | Rate limiting |
-| Nodemailer | 6.x | Email notifications |
+| Nodemailer | 6.x | Password reset emails |
 
 ---
 
@@ -105,7 +109,7 @@ InternConnect/
 │
 ├── backend/
 │   ├── package.json
-│   ├── .env.example                # Copy to .env and fill in values
+│   ├── .env.example
 │   └── src/
 │       ├── server.js               # Entry point — DB connect → HTTP server
 │       ├── app.js                  # Express app (CORS, helmet, rate-limit, routes)
@@ -113,102 +117,91 @@ InternConnect/
 │       ├── config/
 │       │   ├── db.js               # Mongoose connection + retry logic
 │       │   ├── cloudinary.js       # Cloudinary SDK setup
-│       │   └── constants.js        # App-wide constants (roles, statuses…)
+│       │   └── constants.js        # Roles, application statuses, pagination limits
 │       │
 │       ├── models/
-│       │   ├── User.model.js       # Roles, avatar, profile, bcrypt pre-save hook
+│       │   ├── User.model.js       # Roles, avatar, profile, savedInternships, bcrypt hook
 │       │   ├── Internship.model.js # Full-text index, stipend, AI score placeholder
-│       │   ├── Application.model.js# Unique compound index, status history
+│       │   ├── Application.model.js# Compound unique index, status history, recruiterNote
 │       │   └── Company.model.js    # Auto-slug, logo, virtual populate
 │       │
 │       ├── middleware/
 │       │   ├── auth.middleware.js  # protect() + authorise(...roles)
 │       │   ├── error.middleware.js # asyncHandler + global error handler
 │       │   ├── upload.middleware.js# Multer + Cloudinary storage
-│       │   └── validate.middleware.js # express-validator result checker
+│       │   └── validate.middleware.js
 │       │
 │       ├── controllers/
 │       │   ├── auth.controller.js
-│       │   ├── user.controller.js
+│       │   ├── user.controller.js  # Profile, avatar, resume, dashboard stats, save toggle
 │       │   ├── internship.controller.js
 │       │   ├── application.controller.js
 │       │   └── admin.controller.js
 │       │
-│       ├── routes/
-│       │   ├── index.js            # Route aggregator
-│       │   ├── auth.routes.js
-│       │   ├── user.routes.js
-│       │   ├── internship.routes.js
-│       │   ├── application.routes.js
-│       │   └── admin.routes.js
-│       │
-│       └── utils/
-│           ├── apiResponse.js      # ApiResponse + ApiError classes
-│           ├── generateToken.js    # JWT signing helper
-│           └── email.js            # Nodemailer + email templates
+│       └── routes/
+│           ├── index.js
+│           ├── auth.routes.js
+│           ├── user.routes.js      # Includes /dashboard/student, /saved
+│           ├── internship.routes.js
+│           ├── application.routes.js
+│           └── admin.routes.js
 │
 └── frontend/
     ├── package.json
     ├── vite.config.js              # Path alias @/ + proxy to backend :5000
-    ├── tailwind.config.js          # Design tokens, brand colors, animations
+    ├── tailwind.config.js
     ├── postcss.config.js
-    ├── index.html                  # Inter font, SEO meta, Open Graph tags
-    ├── .env.example                # Copy to .env and fill in values
+    ├── index.html
+    ├── .env.example
     └── src/
-        ├── main.jsx                # ReactDOM + BrowserRouter + providers
+        ├── main.jsx
         ├── App.jsx                 # Lazy routes + ProtectedRoute guard
-        ├── index.css               # Tailwind + CSS vars + global reset
+        ├── index.css               # Tailwind + CSS vars + global animations
         │
         ├── context/
-        │   ├── AuthContext.jsx     # Auth state (login / logout / register)
-        │   └── ThemeContext.jsx    # Dark / light mode toggle
+        │   └── AuthContext.jsx     # login / logout / register / updateUser
         │
         ├── hooks/
         │   ├── useAuth.js
         │   ├── useDebounce.js
         │   └── usePagination.js
         │
-        ├── services/
-        │   ├── api.js              # Axios instance + request/response interceptors
+        ├── services/               # All Axios API calls live here
+        │   ├── api.js              # Axios instance + interceptors
         │   ├── auth.service.js
+        │   ├── user.service.js     # Profile, avatar, resume, dashboard, saved
         │   ├── internship.service.js
         │   └── application.service.js
         │
-        ├── utils/
-        │   ├── formatDate.js       # timeAgo, formatDate, daysUntilDeadline
-        │   ├── validators.js       # Email, password, file type/size checks
-        │   └── constants.js        # Roles, status colors, nav links per role
-        │
         ├── components/
         │   ├── layout/
-        │   │   ├── Navbar.jsx      # Sticky, scroll-aware, role-based nav links
-        │   │   ├── Footer.jsx
-        │   │   ├── Sidebar.jsx     # Collapsible dashboard sidebar
-        │   │   └── PageWrapper.jsx
+        │   │   ├── StudentLayout.jsx
+        │   │   ├── RecruiterLayout.jsx
+        │   │   ├── AdminLayout.jsx
+        │   │   ├── Navbar.jsx
+        │   │   └── Sidebar.jsx
         │   │
-        │   ├── ui/                 # Reusable design-system components
-        │   │   ├── Button.jsx      # 6 variants + loading state + polymorphic as prop
-        │   │   ├── Input.jsx       # Label + icon slots + accessible error state
-        │   │   ├── Badge.jsx       # 6 color variants
-        │   │   ├── Card.jsx        # Glassmorphism + hover lift effect
-        │   │   ├── Modal.jsx       # Accessible dialog + Escape key + scroll lock
-        │   │   ├── Spinner.jsx     # 3 sizes + fullScreen overlay
-        │   │   ├── Avatar.jsx      # Image or gradient-initials fallback
-        │   │   └── Tooltip.jsx     # 4 position variants + keyboard focus
-        │   │
-        │   └── sections/
-        │       └── Hero.jsx        # Landing hero with animated blobs + stats
+        │   └── ui/
+        │       ├── Button.jsx
+        │       ├── Input.jsx
+        │       ├── Badge.jsx
+        │       ├── Card.jsx
+        │       ├── Modal.jsx
+        │       ├── Spinner.jsx
+        │       ├── Avatar.jsx
+        │       └── Tooltip.jsx
         │
         └── pages/
             ├── Home.jsx
             ├── Login.jsx
-            ├── Register.jsx        # Role selector (student / recruiter)
-            ├── NotFound.jsx
+            ├── Register.jsx        # Role selector: student / recruiter
+            ├── ForgotPassword.jsx
+            ├── ResetPassword.jsx
             ├── student/
-            │   ├── Dashboard.jsx
-            │   ├── BrowseInternships.jsx
-            │   ├── MyApplications.jsx
-            │   └── Profile.jsx
+            │   ├── Dashboard.jsx   # Live stats, trend chart, profile score
+            │   ├── BrowseInternships.jsx  # Real search + filter + pagination + apply
+            │   ├── MyApplications.jsx     # Real status tracker + withdraw
+            │   └── Profile.jsx     # Full profile editor synced to backend
             ├── recruiter/
             │   ├── Dashboard.jsx
             │   ├── PostInternship.jsx
@@ -262,8 +255,11 @@ npm run dev
 ```
 
 This starts **both** servers concurrently:
-- Frontend → http://localhost:5173
-- Backend API → http://localhost:5000/api/v1
+
+| Server | URL |
+|---|---|
+| Frontend (Vite) | http://localhost:5173 |
+| Backend API | http://localhost:5000/api/v1 |
 
 ---
 
@@ -289,10 +285,10 @@ CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 
-# Client
+# Client origin (for CORS)
 CLIENT_URL=http://localhost:5173
 
-# Email (Nodemailer)
+# Email (Nodemailer — for password reset)
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_USER=your_email@gmail.com
@@ -319,16 +315,21 @@ All endpoints are prefixed with `/api/v1`.
 | `POST` | `/auth/register` | Public | Register as student or recruiter |
 | `POST` | `/auth/login` | Public | Login and receive JWT cookie |
 | `POST` | `/auth/logout` | Protected | Clear auth cookie |
-| `GET` | `/auth/me` | Protected | Get current user |
+| `GET` | `/auth/me` | Protected | Get current authenticated user |
+| `POST` | `/auth/forgot-password` | Public | Send password reset email |
+| `PATCH` | `/auth/reset-password/:token` | Public | Reset password with token |
 
 ### 👤 Users
 
 | Method | Endpoint | Access | Description |
 | --- | --- | --- | --- |
-| `GET` | `/users/profile` | Protected | Get own profile |
-| `PUT` | `/users/profile` | Protected | Update profile |
-| `PUT` | `/users/avatar` | Protected | Upload avatar image |
-| `PUT` | `/users/resume` | Student | Upload resume PDF |
+| `GET` | `/users/profile` | Protected | Get own full profile |
+| `PUT` | `/users/profile` | Protected | Update name, bio, skills, education, links |
+| `PUT` | `/users/avatar` | Protected | Upload / replace avatar image |
+| `PUT` | `/users/resume` | Student | Upload / replace resume PDF |
+| `GET` | `/users/dashboard/student` | Student | Dashboard stats, trend chart, profile score |
+| `GET` | `/users/saved` | Student | Get saved internships |
+| `PATCH` | `/users/saved/:internshipId` | Student | Toggle save / unsave an internship |
 | `GET` | `/users` | Admin | List all users (paginated) |
 | `PATCH` | `/users/:id/toggle-status` | Admin | Activate / deactivate user |
 
@@ -336,30 +337,43 @@ All endpoints are prefixed with `/api/v1`.
 
 | Method | Endpoint | Access | Description |
 | --- | --- | --- | --- |
-| `GET` | `/internships` | Public | Search & filter internships |
-| `GET` | `/internships/:id` | Public | Get single internship |
+| `GET` | `/internships` | Public | Search & filter with pagination |
+| `GET` | `/internships/:id` | Public | Get single internship (increments viewCount) |
 | `GET` | `/internships/my/listings` | Recruiter | Get own listings |
-| `POST` | `/internships` | Recruiter | Create internship |
-| `PUT` | `/internships/:id` | Recruiter | Update internship |
-| `DELETE` | `/internships/:id` | Recruiter | Delete internship |
+| `POST` | `/internships` | Recruiter | Create a new internship |
+| `PUT` | `/internships/:id` | Recruiter | Update an internship |
+| `DELETE` | `/internships/:id` | Recruiter | Delete an internship |
+
+**Query params for `GET /internships`:**
+
+| Param | Type | Description |
+|---|---|---|
+| `search` | string | Full-text search on title / description |
+| `type` | string | `Remote` \| `Hybrid` \| `On-site` |
+| `category` | string | Domain category |
+| `skills` | string | Comma-separated skill filter |
+| `minStipend` | number | Minimum stipend (₹) |
+| `page` | number | Page number (default: 1) |
+| `limit` | number | Results per page (default: 10, max: 50) |
+| `sort` | string | Sort field e.g. `-createdAt` |
 
 ### 📄 Applications
 
 | Method | Endpoint | Access | Description |
 | --- | --- | --- | --- |
-| `POST` | `/applications` | Student | Apply to an internship |
-| `GET` | `/applications/my` | Student | Get own applications |
-| `GET` | `/applications/internship/:id` | Recruiter | Get all applications for a listing |
-| `PATCH` | `/applications/:id/status` | Recruiter | Update application status |
-| `DELETE` | `/applications/:id` | Student | Withdraw application |
+| `POST` | `/applications` | Student | Apply to an internship (multipart/form-data) |
+| `GET` | `/applications/my` | Student | Get all own applications with status |
+| `GET` | `/applications/internship/:id` | Recruiter | Get all applicants for a listing |
+| `PATCH` | `/applications/:id/status` | Recruiter | Update status + add recruiter note |
+| `DELETE` | `/applications/:id` | Student | Withdraw a pending application |
 
 ### 🛡️ Admin
 
 | Method | Endpoint | Access | Description |
 | --- | --- | --- | --- |
-| `GET` | `/admin/stats` | Admin | Platform dashboard statistics |
-| `PATCH` | `/admin/internships/:id/feature` | Admin | Toggle featured status |
-| `PATCH` | `/admin/companies/:id/verify` | Admin | Verify a company |
+| `GET` | `/admin/stats` | Admin | Platform-wide statistics |
+| `PATCH` | `/admin/internships/:id/feature` | Admin | Toggle featured status on a listing |
+| `PATCH` | `/admin/companies/:id/verify` | Admin | Verify / reject a company |
 | `GET` | `/health` | Public | API health check |
 
 ---
@@ -368,9 +382,9 @@ All endpoints are prefixed with `/api/v1`.
 
 | Role | How to Get | Capabilities |
 | --- | --- | --- |
-| `student` | Self-register | Browse, apply, track applications, manage profile |
-| `recruiter` | Self-register | Post internships, manage listings, review applicants |
-| `admin` | Manual DB assignment | Full platform access, verification, moderation |
+| `student` | Self-register | Browse, apply, track applications, save listings, full profile management |
+| `recruiter` | Self-register | Post internships, manage listings, review & update applicants |
+| `admin` | Manual DB assignment | Full platform access — verification, moderation, analytics |
 
 ---
 
@@ -378,54 +392,40 @@ All endpoints are prefixed with `/api/v1`.
 
 InternConnect uses a custom **dark-first** design system built on Tailwind CSS.
 
-### Brand Color Palette
+### Color Palette
 
 | Token | Value | Usage |
 | --- | --- | --- |
-| `brand-500` | `#6366f1` | Primary actions, active links |
-| `brand-600` | `#4f46e5` | Button hover states |
-| `accent-500` | `#d946ef` | Gradient accents, badges |
-| `surface` | `#0f0e17` | Page background |
-| `surface-card` | `#1a1929` | Card backgrounds |
-| `surface-border` | `#2d2b50` | Borders and dividers |
-| `surface-muted` | `#6b6b8a` | Secondary / placeholder text |
-
-### Utility Classes
-
-```css
-.card-glass        /* Glassmorphism card with backdrop blur */
-.gradient-text     /* Indigo → violet gradient text fill    */
-.gradient-bg       /* Indigo → violet gradient background   */
-.container-page    /* Centered max-w-7xl page container     */
-.badge             /* Base badge chip                       */
-.badge-brand       /* Indigo badge variant                  */
-.badge-success     /* Emerald badge variant                 */
-.input-base        /* Standard dark input styling           */
-.skeleton          /* Shimmer loading placeholder           */
-```
+| `blue-600` | `#2563eb` | Primary actions, active nav, CTAs |
+| `cyan-400` | `#38bdf8` | Gradient accents, chart lines |
+| `emerald-400` | `#34d399` | Success, accepted status, verified |
+| `amber-400` | `#fbbf24` | Pending, warnings |
+| `red-400` | `#f87171` | Rejected, errors |
+| `slate-900` | `#0f172a` | Page background |
+| `[#111827]` | `#111827` | Card backgrounds |
 
 ### Animations
 
 | Name | Effect |
 | --- | --- |
-| `fade-in` | Slide up + fade in |
-| `fade-in-scale` | Scale up + fade in |
-| `float` | Gentle vertical bob |
-| `shimmer` | Skeleton sweep |
+| `animate-fade-in` | Slide up + fade in on mount |
+| `animate-spin` | Loading spinners |
+| `float` | Gentle vertical bob (hero blobs) |
+| `shimmer` | Skeleton loading sweep |
 | `gradient-shift` | Animated gradient background |
 
 ---
 
 ## 🔒 Security
 
-- **HTTP-only cookies** for JWT storage — safe from XSS attacks
-- **Helmet.js** — sets secure HTTP response headers
+- **HTTP-only cookies** for JWT — safe from XSS attacks
+- **Helmet.js** — sets `Content-Security-Policy`, `X-Frame-Options`, and other secure headers
 - **CORS** — restricted to `CLIENT_URL` only
-- **Rate limiting** — 200 req / 15 min globally; 20 req / 15 min on auth routes
-- **bcryptjs** — password hashing with 12 salt rounds
-- **Role-based access control** — `protect()` + `authorise()` middleware chain
-- **Input validation** — Mongoose schema + `express-validator` on all endpoints
-- **Unique compound index** — one application per internship per user (DB-level)
+- **Rate limiting** — 200 req / 15 min globally; 20 req / 15 min on `/auth` routes
+- **bcryptjs** — passwords hashed with 12 salt rounds; never stored in plaintext
+- **Role-based access control** — `protect()` verifies JWT; `authorise(...roles)` checks role
+- **Mongoose schema validation** — type and constraint checks at the ODM layer
+- **Compound unique index** — one application per student per internship, enforced at DB level
 
 ---
 
@@ -437,7 +437,7 @@ InternConnect uses a custom **dark-first** design system built on Tailwind CSS.
 npm run dev              # Start frontend + backend concurrently
 npm run dev:frontend     # Start only Vite dev server  → :5173
 npm run dev:backend      # Start only Express server   → :5000
-npm run install:all      # Install all packages
+npm run install:all      # Install packages for root + frontend + backend
 npm run build            # Production build of frontend
 ```
 
@@ -445,7 +445,7 @@ npm run build            # Production build of frontend
 
 ```bash
 npm run dev    # nodemon — auto-restart on file changes
-npm start      # node   — production start
+npm start      # node    — production start
 ```
 
 ### Frontend
@@ -453,54 +453,55 @@ npm start      # node   — production start
 ```bash
 npm run dev      # Vite dev server with HMR
 npm run build    # Production bundle → dist/
-npm run preview  # Preview the production build locally
+npm run preview  # Serve the production build locally
 ```
 
 ---
 
 ## 🗺️ Roadmap
 
-### Phase 1 — Scaffold ✅ *(complete)*
+### Phase 1 — Project Scaffold ✅ *(complete)*
 
-- [x] Project structure and configuration files
+- [x] Monorepo structure and tooling configuration
 - [x] Mongoose models — User, Internship, Application, Company
-- [x] Express middleware stack — auth, error, upload, validate
+- [x] Full Express middleware stack — auth, error, upload, validate, rate-limit, CORS
 - [x] REST API controllers and routes for all resources
 - [x] React component library — Button, Input, Badge, Card, Modal, Spinner, Avatar, Tooltip
-- [x] AuthContext, ThemeContext, custom hooks, Axios service layer
-- [x] Comprehensive README
+- [x] AuthContext, Axios service layer, protected routing
 
-### Phase 2 — Core Authentication 🔜
+### Phase 2 — Authentication ✅ *(complete)*
 
-- [ ] Functional login / register forms with validation
-- [ ] JWT HTTP-only cookie auth flow end-to-end
-- [ ] Protected route enforcement
-- [ ] Password reset via email (Nodemailer)
+- [x] Login / Register with JWT HTTP-only cookie flow
+- [x] Role-based route protection (student / recruiter / admin)
+- [x] Persistent sessions via localStorage + server re-validation
+- [x] Forgot & reset password via email token (Nodemailer)
 
-### Phase 3 — Internship Features
+### Phase 3 — Live Backend Integration ✅ *(complete)*
 
-- [ ] Internship listing page with search, filters, and pagination
-- [ ] Internship detail page
-- [ ] Multi-step post internship form (recruiter)
-- [ ] Application submission with resume upload to Cloudinary
+- [x] Student Dashboard — real MongoDB stats, 6-month trend chart via aggregation, profile score
+- [x] Browse Internships — real paginated listings with search & filter, bookmark toggle persisted in DB
+- [x] Apply modal — submits `multipart/form-data` to backend with cover letter; shows "Applied" badge
+- [x] My Applications — real status timeline with recruiter notes, working Withdraw API
+- [x] Student Profile — each section (bio, skills, education, certifications, links) saves to backend; avatar & resume upload to Cloudinary
+- [x] Saved internships — `savedInternships[]` persisted on User document
 
-### Phase 4 — Dashboards
+### Phase 4 — Recruiter & Admin Dashboards 🔜
 
-- [ ] Student — application tracker with live status badges
-- [ ] Recruiter — applicant review interface with notes
-- [ ] Admin — platform analytics with charts
+- [ ] Recruiter applicant review UI with inline status update
+- [ ] Admin platform analytics page with live charts
+- [ ] Company verification workflow
 
 ### Phase 5 — AI Integration
 
-- [ ] AI-based profile ↔ internship matching score
-- [ ] Skill gap recommendations
+- [ ] Profile ↔ internship match score using skill vector comparison
+- [ ] Skill gap recommendations based on desired roles
 - [ ] Auto-generated cover letter suggestions
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Here is how to get started:
+Contributions are welcome!
 
 1. **Fork** this repository
 2. **Create** a feature branch
@@ -509,7 +510,7 @@ Contributions are welcome! Here is how to get started:
    git checkout -b feature/your-feature-name
    ```
 
-3. **Commit** your changes using Conventional Commits
+3. **Commit** using Conventional Commits
 
    ```bash
    git commit -m "feat: add your feature description"
